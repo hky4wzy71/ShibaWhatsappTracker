@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "axios": "^0.25.0",
+    "qrcode-terminal": "^0.12.0",
+    "whatsapp-web.js": "^1.15.4"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "name": "shibawhatsapptracker",
+  "version": "1.0.0",
+  "main": "server.js",
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
