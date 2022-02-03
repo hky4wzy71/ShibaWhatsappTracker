@@ -3,7 +3,7 @@ const qrcode = require("qrcode-terminal");
 const { Client } = require("whatsapp-web.js");
 const axios = require("axios");
 
-const number = "905534178921"; // Phone number to target
+const number = "*******"; // Phone number to target
 const chatId = number + "@c.us";
 const d = new Date();
 
