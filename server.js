@@ -3,8 +3,9 @@ const qrcode = require("qrcode-terminal");
 const { Client } = require("whatsapp-web.js");
 const axios = require("axios");
 
-const number = "********"; // Phone number to target
-const chatId = number + "@c.us";
+const phoneNumber = "90*********"; //if you want use , command below statement
+
+const chatId = phoneNumber + "@c.us";
 const d = new Date();
 
 // Path where the session data will be stored
@@ -42,12 +43,12 @@ client.on("ready", () => {
 });
 
 ///////////////////////////////// S T A R T ////////////////////////////////////////
-let maxPrice, minPrice, dif;
+let maxPrice, minPrice, dif, maxPriceEl, minPriceEl;
 let send = false;
 let count = 0;
 
 //for dif up or down
-let firstPrice, direction;
+let firstPrice, lastPrice, direction;
 
 const maxPrices = [];
 const minPrices = [];
@@ -65,13 +66,13 @@ client.on("ready", () => {
         count = ${count}
         `);
         compareMaxCurrent(res.data.lastPrice);
-        //60 = 5minutes,
-        if (count === 3) {
+        //Periyot  60 = 5minutes, 12 = 1 minute
+        if (count === 12) {
           evaluateDif();
           directionDecision();
 
           if (send) {
-            message = messageCreate(dif);
+            message = messageCreate();
             client.sendMessage(chatId, message);
           }
           //resetting
@@ -90,9 +91,6 @@ client.on("ready", () => {
         bidPrice => sell position
         spread = ask - bid  
         */
-
-        // message = messageCreate(res);
-        // client.sendMessage(chatId, message);
       });
   }, 5000);
 });
@@ -103,16 +101,8 @@ async function initializeMaxMin() {
     .then((res) => {
       const prevClosePrice = +res.data.prevClosePrice;
       const lastPrice = +res.data.lastPrice;
-      if (prevClosePrice > lastPrice) {
-        maxPrice = prevClosePrice;
-        minPrice = lastPrice;
-      } else if (prevClosePrice < lastPrice) {
-        maxPrice = lastPrice;
-        minPrice = prevClosePrice;
-      } else {
-        maxPrice = prevClosePrice;
-        minPrice = prevClosePrice;
-      }
+      maxPrice = lastPrice;
+      minPrice = lastPrice;
     });
   firstPrice = maxPrice; // for use to later compare dif + or -
   console.log(`max = ${maxPrice} \nmin = ${minPrice}`);
@@ -121,55 +111,39 @@ function compareMaxCurrent(currentP) {
   currentP = +currentP;
   if (maxPrice <= currentP) maxPrice = currentP;
   else minPrice = currentP;
+
+  lastPrice = currentP; // for use to later compare dif + or -
 }
 function watchAndSave() {
   maxPrices.push(maxPrice);
   minPrices.push(minPrice);
 }
 function evaluateDif() {
-  let maxPriceEl = Math.max(...maxPrices);
-  let minPriceEl = Math.min(...minPrices);
+  maxPriceEl = Math.max(...maxPrices);
+  minPriceEl = Math.min(...minPrices);
   console.log(maxPriceEl, minPriceEl, dif);
-  dif = maxPriceEl - minPriceEl;
+  dif = maxPriceEl.toFixed(8) - minPriceEl.toFixed(8);
   dif = dif.toFixed(8);
   /*if(dif>0.xxxx) send true */
   send = true;
 }
 function directionDecision() {
-  if (firstPrice > maxPrice) direction = "Artis";
-  else if (firstPrice > maxPrice) direction = "Sabit";
-  else direction = "Dusus";
+  if (firstPrice > lastPrice) direction = "Düşüş";
+  else if (firstPrice == lastPrice) direction = "Sabit";
+  else direction = "Artış";
 }
-function messageCreate(dif) {
-  return `Max: ${maxPrice}
-Min: ${minPrice}
-Değişim: ${dif}
-Yön: ${direction}
-  `;
+function messageCreate() {
+  return `
+İlk:\t   ${firstPrice.toFixed(8)}
+Son:\t${lastPrice.toFixed(8)}
+-----------------------------
+Max:\t${maxPriceEl.toFixed(8)}
+Min:\t${minPriceEl.toFixed(8)}
+Dif:\t${dif}
+Yön:\t${direction}
+Periyot:\t1dk
+`;
 }
 //////////////////////////////// E N D //////////////////////////////////////
 
 client.initialize();
-
-/*{"symbol":"SHIBTRY",
-"priceChange":"0.00000945",
-"priceChangePercent":"3.342",
-"weightedAvgPrice":"0.00028925",
-"prevClosePrice":"0.00028273",
-"lastPrice":"0.00029220",
-"lastQty":"27309157.00",
-"bidPrice":"0.00029206",
-"bidQty":"8092472.00",
-"askPrice":"0.00029223",
-"askQty":"15000000.00",
-"openPrice":"0.00028275",
-"highPrice":"0.00029500",
-"lowPrice":"0.00028180",
-"volume":"621432087719.00",
-"quoteVolume":"179748569.24176604",
-"openTime":1643637242711,
-"closeTime":1643723642711,
-"firstId":30323603,
-"lastId":30362303,
-"count":38701}
-*/
