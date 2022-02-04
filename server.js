@@ -3,7 +3,7 @@ const qrcode = require("qrcode-terminal");
 const { Client } = require("whatsapp-web.js");
 const axios = require("axios");
 
-const phoneNumber = "90*********"; //if you want use , command below statement
+const phoneNumber = "90**********" //if you want use , command below statement
 
 const chatId = phoneNumber + "@c.us";
 const d = new Date();
@@ -66,8 +66,8 @@ client.on("ready", () => {
         count = ${count}
         `);
         compareMaxCurrent(res.data.lastPrice);
-        //Periyot  60 = 5minutes, 12 = 1 minute
-        if (count === 12) {
+        //Periyot  60 = 5min, 12 = 1min, 360=30min
+        if (count === 360) {
           evaluateDif();
           directionDecision();
 
@@ -99,7 +99,6 @@ async function initializeMaxMin() {
   await axios
     .get("https://api.binance.com/api/v3/ticker/24hr?symbol=SHIBTRY")
     .then((res) => {
-      const prevClosePrice = +res.data.prevClosePrice;
       const lastPrice = +res.data.lastPrice;
       maxPrice = lastPrice;
       minPrice = lastPrice;
@@ -124,8 +123,9 @@ function evaluateDif() {
   console.log(maxPriceEl, minPriceEl, dif);
   dif = maxPriceEl.toFixed(8) - minPriceEl.toFixed(8);
   dif = dif.toFixed(8);
-  /*if(dif>0.xxxx) send true */
-  send = true;
+  
+  if(dif>0.00000500) send=true 
+  else send = false;
 }
 function directionDecision() {
   if (firstPrice > lastPrice) direction = "Düşüş";
@@ -141,7 +141,7 @@ Max:\t${maxPriceEl.toFixed(8)}
 Min:\t${minPriceEl.toFixed(8)}
 Dif:\t${dif}
 Yön:\t${direction}
-Periyot:\t1dk
+Periyot:\t30min
 `;
 }
 //////////////////////////////// E N D //////////////////////////////////////
